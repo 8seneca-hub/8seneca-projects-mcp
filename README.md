@@ -95,6 +95,14 @@ This server unlocks all sorts of useful capabilities for anyone working with Pla
   - Create a new project
   - Parameters:
     - `name` (string, required): Project name 
+    - `identifier` (string, required): Short uppercase key, max 7 chars
+    - `project_manager` (string, optional): UUID of the manager. **8seneca fork.** Must be an active workspace member or the create is refused
+    - `docs_view` (boolean, optional): Enable the project's Docs tab. **8seneca fork**
+
+- `get_project_summary` — **8seneca fork**
+  - A project's counts in one call: work items, modules, cycles, states, members, pages, labels, intakes
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
 
 ### Issue Types
 
@@ -232,7 +240,12 @@ This server unlocks all sorts of useful capabilities for anyone working with Pla
   - Parameters:
     - `project_id` (string, required): UUID of the project 
     - `issue_id` (string, required): UUID of the issue 
-    - `issue_data` (object): Fields to update on the issue 
+    - `issue_data` (object): Fields to update on the issue
+
+`issue_data` on both accepts `estimate_hours` (positive integer) — **8seneca fork**.
+Hours is the only unit, so `estimate_unit` is set server-side and is not a
+parameter. It is mutually exclusive with `estimate_point`: whichever is sent
+wins and the other is cleared. 
 
 ### Modules
 
@@ -345,6 +358,51 @@ This server unlocks all sorts of useful capabilities for anyone working with Pla
     - `project_id` (string, required): UUID of the project 
     - `cycle_id` (string, required): UUID of the cycle 
     - `issue_id` (string, required): UUID of the issue to remove 
+
+### Views — 8seneca fork
+
+Saved views are served from `/api/v1` on this fork; upstream keeps them on the
+session-auth app API, out of reach of an API token.
+
+- `list_project_views`
+  - Get all saved views for a project
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+
+- `get_view`
+  - Get one saved view
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+    - `view_id` (string, required): UUID of the view
+
+- `create_view`
+  - Create a saved view. Requires project Admin or Member
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+    - `view_data` (object, required): `name` required. Pass `rich_filters` or the view opens unfiltered
+
+- `update_view`
+  - Update a saved view
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+    - `view_id` (string, required): UUID of the view
+    - `view_data` (object, required): Fields to change
+
+- `delete_view`
+  - Delete a saved view. Owner or project Admin only
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+    - `view_id` (string, required): UUID of the view
+
+### Docs — 8seneca fork
+
+- `get_project_docs`
+  - Read a page of a project's published docs site. Returns the raw file, HTML for a page
+  - Parameters:
+    - `project_id` (string, required): UUID of the project
+    - `path` (string, optional): Path within the site, e.g. `guide/setup.html`. Omit for the index
+  - Only projects with `docs_view` on **and a published build** have any; others 404. There is no path listing, so follow links from the index
+  - The write half of the docs API (presign uploads, commit a build) is a CI deploy step and is deliberately not wrapped
 
 ### Work Logs
 
