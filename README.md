@@ -2,6 +2,22 @@
 
 MCP server for 8seneca's Plane fork at [projects.8seneca.com](https://projects.8seneca.com), workspace `8seneca`.
 
+> **The hosted server has moved into the Plane fork.** `8seneca-projects` now
+> serves MCP itself at `/mcp`, with the tools beside the `/api/v1/` views they
+> call, so the catalogue ships with the endpoints and a build fails when a tool
+> points at a route that no longer exists. Register a URL instead of installing
+> anything:
+>
+> ```bash
+> claude mcp add 8projects --transport http \
+>   https://projects.8seneca.com/mcp \
+>   -H "X-API-Key: <your own token>"
+> ```
+>
+> This repo stays for local stdio development against a checkout. It is no
+> longer the thing teammates install. See ADR 0002 in the fork for why, and for
+> the ten tools that were dropped because they had never worked here.
+
 Forked from [`makeplane/plane-mcp-server`](https://github.com/makeplane/plane-mcp-server) at **v0.1.5** — the last TypeScript release, and the one published to npm. Upstream has since rewritten the server in Python on `plane-sdk`; that line targets Plane Cloud and does not fit this deployment (PQL is refused by our edition, and roughly two thirds of its tools 404 here), so this fork stays on the v0.1.5 base.
 
 ## What this fork adds
