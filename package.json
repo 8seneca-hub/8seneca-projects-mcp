@@ -9,6 +9,7 @@
   "author": "engineering@plane.so",
   "scripts": {
     "build": "rm -rf build && tsc && chmod 755 build/index.js",
+    "prepare": "npm run build",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",

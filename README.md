@@ -20,6 +20,31 @@ Everything upstream v0.1.5 does, plus the fork's own fields and endpoints:
 
 **Only `/api/v1` is reachable.** The fork's Django URLconf splits `/api/v1/` (API-key auth) from `/api/` (session/JWT). Project types, domains, defaults, teams, summary CRUD, summary statuses and the P&L subsystem all live on the session side and cannot be reached with a Plane API token. Tools for those wait on the backend ticket that promotes them.
 
+## Install (team setup)
+
+The repo is public, so npm installs it straight from git — no registry, no npm
+login, nothing to publish. `prepare` builds it on install.
+
+```bash
+claude mcp add 8projects -s user \
+  -e PLANE_API_KEY=<your own token> \
+  -e PLANE_API_HOST_URL=https://projects.8seneca.com \
+  -e PLANE_WORKSPACE_SLUG=8seneca \
+  -- npx -y github:8seneca-hub/8seneca-projects-mcp
+```
+
+Pin a release by appending a tag: `github:8seneca-hub/8seneca-projects-mcp#v0.1.5-8seneca.1`.
+Without one you track `main`, which npx re-resolves as its cache expires.
+
+**Everyone uses their own API token.** Generate one at
+[Workspace Settings > API Tokens](https://projects.8seneca.com/8seneca/settings/api-tokens/).
+The token carries your own permissions, so the server can only reach what you
+can already reach. Do not share one token across the team — it makes every
+write look like it came from one person.
+
+Any MCP client works, not just Claude Code; the equivalent JSON is under
+[Usage](#usage) below.
+
 ## Development
 
 ```bash
