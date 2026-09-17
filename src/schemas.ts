@@ -45,6 +45,14 @@ export const Issue = z.object({
   description_binary: z.string().readonly(),
   description_html: z.string().optional(),
   estimate_point: z.string().uuid().optional(),
+  estimate_hours: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe(
+      "8seneca fork: free-typed estimate in whole hours. Mutually exclusive with estimate_point — whichever is sent wins and the other is cleared server-side. Hours is the only unit, so estimate_unit is set by the server and must not be passed."
+    ),
   external_id: z.string().max(255).optional(),
   external_source: z.string().max(255).optional(),
   id: z.string().uuid().readonly(),
@@ -214,7 +222,7 @@ export const Project = z.object({
   icon_prop: z.any().optional(),
   id: z.string().uuid().readonly(),
   identifier: z.string().max(12),
-  inbox_view: z.boolean().optional(),
+  intake_view: z.boolean().optional().describe("8seneca fork spells this intake_view, not inbox_view"),
   is_deployed: z.boolean().readonly(),
   is_issue_type_enabled: z.boolean().optional(),
   is_member: z.boolean().readonly(),
@@ -227,6 +235,14 @@ export const Project = z.object({
   network: z.any().optional(),
   page_view: z.boolean().optional(),
   project_lead: z.string().uuid().optional(),
+  project_manager: z
+    .string()
+    .uuid()
+    .optional()
+    .describe(
+      "8seneca fork: the project's manager, holding the same standing as project_lead. Must be an active member of the workspace or the write is refused."
+    ),
+  docs_view: z.boolean().optional().describe("8seneca fork: whether the project's Docs tab is enabled"),
   sort_order: z.number().readonly(),
   timezone: z.any().optional(),
   total_cycles: z.number().int().readonly(),
@@ -250,3 +266,39 @@ export const IssueWorkLog = z.object({
 });
 
 export type IssueWorkLog = z.infer<typeof IssueWorkLog>;
+
+// 8seneca fork: project views are served from /api/v1 (upstream keeps them on the
+// session-auth app API). `query` is derived from `filters` server-side; `owned_by`,
+// `project` and `workspace` come from the URL and the caller's token.
+export const IssueView = z.object({
+  access: z
+    .union([z.literal(0), z.literal(1)])
+    .optional()
+    .describe("0 = private, 1 = public (default)"),
+  archived_at: z.string().datetime({ offset: true }).readonly(),
+  created_at: z.string().datetime({ offset: true }).readonly(),
+  created_by: z.string().uuid().readonly(),
+  deleted_at: z.string().datetime({ offset: true }).readonly(),
+  description: z.string().optional(),
+  display_filters: z.record(z.any()).optional().describe("Layout and grouping, a JSON object"),
+  display_properties: z.record(z.any()).optional().describe("Which work item fields the view shows, a JSON object"),
+  filters: z.record(z.any()).optional().describe("Legacy filter format, a JSON object. Drives the derived query"),
+  id: z.string().uuid().readonly(),
+  is_locked: z.boolean().readonly(),
+  logo_props: z.record(z.any()).optional(),
+  name: z.string().max(255),
+  owned_by: z.string().uuid().readonly(),
+  project: z.string().uuid().readonly(),
+  query: z.any().readonly(),
+  rich_filters: z
+    .record(z.any())
+    .optional()
+    .describe(
+      "The filter format the web app reads to render a saved view, a JSON object. A view created without it saves fine but opens showing every work item, unfiltered."
+    ),
+  sort_order: z.number().readonly(),
+  updated_at: z.string().datetime({ offset: true }).readonly(),
+  updated_by: z.string().uuid().readonly(),
+  workspace: z.string().uuid().readonly(),
+});
+export type IssueView = z.infer<typeof IssueView>;
