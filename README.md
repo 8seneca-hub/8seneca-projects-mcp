@@ -45,6 +45,25 @@ write look like it came from one person.
 Any MCP client works, not just Claude Code; the equivalent JSON is under
 [Usage](#usage) below.
 
+### Or over HTTP, with no local Node
+
+The same server also speaks Streamable HTTP, deployed behind each Plane
+instance. Nothing to install, nothing to build:
+
+```bash
+claude mcp add 8projects-sandbox --transport http \
+  https://8projects-sandbox.up.railway.app/mcp \
+  -H "X-API-Key: <your own token>"
+```
+
+The key travels on every request and is used as-is against Plane, so
+permissions and attribution stay per-user exactly as they do over stdio. The
+server holds no key of its own: a request without `X-API-Key` is refused with
+401 before any tool runs.
+
+Prefer this for teammates who only want the tools. stdio stays the right choice
+for local development against a checkout.
+
 ## Development
 
 ```bash
@@ -447,6 +466,16 @@ session-auth app API, out of reach of an API token.
 - `PLANE_API_KEY` - Your Plane API token. You can generate one from the Workspace Settings > API Tokens page (`/settings/api-tokens/`) in the Plane app. 
 - `PLANE_WORKSPACE_SLUG` - The workspace slug for your Plane instance. The workspace-slug represents the unique workspace identifier for a workspace in Plane. It can be found in the URL.
 - `PLANE_API_HOST_URL` - The host URL of the Plane API Server. For this fork: `https://projects.8seneca.com`. Defaults to https://api.plane.so/ if unset, which is not what you want here.
+
+### http mode only
+
+`node build/index.js http` serves Streamable HTTP on `/mcp`, plus `GET /health`.
+Mode is a positional argument and defaults to `stdio`.
+
+- `PORT` - port to listen on. Railway injects this. Defaults to 8080.
+- `MCP_ALLOWED_HOSTS` - comma-separated `Host` header allow-list for DNS-rebinding protection. `localhost:$PORT` and `127.0.0.1:$PORT` are added for you, so a plain local run needs nothing; anything that changes the port the client sees - a public deployment, a Docker port mapping - must list that host:port here or every request gets a 403.
+- `MCP_RATE_LIMIT` - requests per client IP per minute. Defaults to 120.
+- `PLANE_API_KEY` is **ignored** in http mode. Every request must carry its own `X-API-Key`; there is deliberately no server-side fallback.
 
 ## Usage
 
