@@ -1,4 +1,36 @@
-# Plane MCP Server
+# 8seneca Projects MCP Server
+
+MCP server for 8seneca's Plane fork at [projects.8seneca.com](https://projects.8seneca.com), workspace `8seneca`.
+
+Forked from [`makeplane/plane-mcp-server`](https://github.com/makeplane/plane-mcp-server) at **v0.1.5** — the last TypeScript release, and the one published to npm. Upstream has since rewritten the server in Python on `plane-sdk`; that line targets Plane Cloud and does not fit this deployment (PQL is refused by our edition, and roughly two thirds of its tools 404 here), so this fork stays on the v0.1.5 base.
+
+## What this fork adds
+
+Everything upstream v0.1.5 does, plus the fork's own fields and endpoints:
+
+| Addition | Where |
+|---|---|
+| `estimate_hours` on work items | `create_issue`, `update_issue` |
+| `project_manager`, `docs_view` | `get_projects`, `create_project` |
+| `get_project_summary` | project counts in one call |
+| `list_project_views`, `get_view`, `create_view`, `update_view`, `delete_view` | saved views, fork-only on `/api/v1` |
+| `get_project_docs` | reads a project's published docs site |
+
+**`estimate_hours` is hours, always.** The fork normalises `estimate_unit` server-side (8HUB-167), so it is not exposed as an input — send `estimate_hours` alone. It is mutually exclusive with `estimate_point`: whichever is sent wins, and the other is cleared.
+
+**Only `/api/v1` is reachable.** The fork's Django URLconf splits `/api/v1/` (API-key auth) from `/api/` (session/JWT). Project types, domains, defaults, teams, summary CRUD, summary statuses and the P&L subsystem all live on the session side and cannot be reached with a Plane API token. Tools for those wait on the backend ticket that promotes them.
+
+## Development
+
+```bash
+npm install
+npm run build          # -> build/index.js
+npm run lint
+```
+
+Point an MCP client at `node <repo>/build/index.js` with the env vars below.
+
+---
 
 The Plane MCP Server brings the power of Model Context Protocol (MCP) to Plane, allowing AI agents and developer tools to interact programmatically with your Plane workspace.
 
@@ -331,7 +363,7 @@ This server unlocks all sorts of useful capabilities for anyone working with Pla
 
 - `PLANE_API_KEY` - Your Plane API token. You can generate one from the Workspace Settings > API Tokens page (`/settings/api-tokens/`) in the Plane app. 
 - `PLANE_WORKSPACE_SLUG` - The workspace slug for your Plane instance. The workspace-slug represents the unique workspace identifier for a workspace in Plane. It can be found in the URL.
-- `PLANE_API_HOST_URL` (optional) - The host URL of the Plane API Server. Defaults to https://api.plane.so/
+- `PLANE_API_HOST_URL` - The host URL of the Plane API Server. For this fork: `https://projects.8seneca.com`. Defaults to https://api.plane.so/ if unset, which is not what you want here.
 
 ## Usage
 
@@ -342,16 +374,15 @@ You can add Plane to [Claude Desktop](https://modelcontextprotocol.io/quickstart
 ```json
 {
   "mcpServers": {
-    "plane": {
-       "command": "npx",
+    "8projects": {
+      "command": "node",
       "args": [
-        "-y",
-        "@makeplane/plane-mcp-server"
+        "<PATH_TO_THIS_REPO>/build/index.js"
       ],
       "env": {
         "PLANE_API_KEY": "<YOUR_API_KEY>",
-        "PLANE_API_HOST_URL": "<HOST_URL_FOR_SELF_HOSTED>",
-        "PLANE_WORKSPACE_SLUG": "<YOUR_WORKSPACE_SLUG>"
+        "PLANE_API_HOST_URL": "https://projects.8seneca.com",
+        "PLANE_WORKSPACE_SLUG": "8seneca"
       }
     }
   }
@@ -365,16 +396,15 @@ You can also connect Plane to [VSCode](https://code.visualstudio.com/docs/copilo
 ```json
 {
   "servers": {
-    "plane": {
-      "command": "npx",
+    "8projects": {
+      "command": "node",
       "args": [
-        "-y",
-        "@makeplane/plane-mcp-server"
+        "<PATH_TO_THIS_REPO>/build/index.js"
       ],
       "env": {
         "PLANE_API_KEY": "<YOUR_API_KEY>",
-        "PLANE_API_HOST_URL": "<HOST_URL_FOR_SELF_HOSTED>",
-        "PLANE_WORKSPACE_SLUG": "<YOUR_WORKSPACE_SLUG>"
+        "PLANE_API_HOST_URL": "https://projects.8seneca.com",
+        "PLANE_WORKSPACE_SLUG": "8seneca"
       }
     }
   }
